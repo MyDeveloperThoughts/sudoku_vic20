@@ -49,7 +49,7 @@
         <PostBuildCommands />
     </BuildEvents>
     <BuildList>
-        <FileName>suduko.bas</FileName>
+        <FileName>sudoku.bas</FileName>
         <FileName>packboard.bas</FileName>
     </BuildList>
     <DetermineBuildOrder>0</DetermineBuildOrder>
@@ -62,7 +62,7 @@
     <ExtendedBASIC>False</ExtendedBASIC>
     <SourceFiles>
         <SourceFile>
-            <Name>\suduko.bas</Name>
+            <Name>\sudoku.bas</Name>
             <PrgName />
             <FileType>1</FileType>
             <IncludeInBuild>True</IncludeInBuild>
