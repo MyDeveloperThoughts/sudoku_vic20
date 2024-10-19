@@ -21,6 +21,7 @@
 
 !- Constant replacements - these are used often, memory and speed benefit
 !- k (_CHARS_IN_KBD_BUF_)       19
+!- s (_BASS_SOUND_)             36874
 
 !- Constants for important memory addresses
 !- Check these memory addresses out in the book Mapping the VIC
@@ -42,7 +43,7 @@
 !-CONST _BASS_SOUND_       36874
 !-CONST _SOPRANO_SOUND_    36876
 10 n$=" 123456789":dim gb%(8,8):c=0:b=0:poke _COLORS_,10:poke _SOUND_VOLUME_,15
-11 k=198
+11 k=_CHARS_IN_KBD_BUF_:s=_BASS_SOUND_
 20 print "{clear}{white}select puzzle"chr$(13)"{green}1-4 {yellow}5-8 {purple}9-10 {red}11{white}":input gb
 30 if (gb<0 or gb>11) then end
 40 print "{cyan}one moment...":gosub800:print"{clear}bye":end
@@ -121,9 +122,9 @@
 
 
 !- buzzer sound for piece exists in this spot
-6000 forx=140to238step4:poke_BASS_SOUND_,x:next:poke_BASS_SOUND_,0:return
+6000 forx=140to238step4:pokes,x:next:pokes,0:return
 !- buzzer sound for wrong answer
-6010 forx=140to238step4:poke_BASS_SOUND_,140:next:poke_BASS_SOUND_,0:return
+6010 forx=140to238step4:pokes,140:next:pokes,0:return
 !- ding for correct answer
 6020 forx=235to250:poke_SOPRANO_SOUND_,x:next:poke_SOPRANO_SOUND_,0:return
 
