@@ -19,6 +19,9 @@
 !-cx cx  = Cursor x and y position in the board
 !-px py  = x,y on the screen relative to cx,cx
 
+!- Constant replacements - these are used often, memory and speed benefit
+!- k (_CHARS_IN_KBD_BUF_)       19
+
 !- Constants for important memory addresses
 !- Check these memory addresses out in the book Mapping the VIC
 !-CONST _SOUND_VOLUME_     36878 
@@ -39,6 +42,7 @@
 !-CONST _BASS_SOUND_       36874
 !-CONST _SOPRANO_SOUND_    36876
 10 n$=" 123456789":dim gb%(8,8):c=0:b=0:poke _COLORS_,10:poke _SOUND_VOLUME_,15
+11 k=198
 20 print "{clear}{white}select puzzle"chr$(13)"{green}1-4 {yellow}5-8 {purple}9-10 {red}11{white}":input gb
 30 if (gb<0 or gb>11) then end
 40 print "{cyan}one moment...":gosub800:print"{clear}bye":end
@@ -61,8 +65,8 @@
 1030 if py>2 then py=py+1
 1040 if py>6 then py=py+1
 1080 poke_CPU_STATUS_FLAGS_,0:poke_CPU_X_REG_,py+7:poke_CPU_Y_REG_,px+5:sys_KERNAL_PLOT_
-1090 poke _CURSOR_BLINK_,0:poke _CHARS_IN_KBD_BUF_,0:wait _CHARS_IN_KBD_BUF_,1:poke _CURSOR_BLINK_,1:poke _CURSOR_REV_,0
-1100 poke_CHARS_IN_KBD_BUF_,0:a$=chr$(peek(631))
+1090 poke _CURSOR_BLINK_,0:poke k,0:wait k,1:poke _CURSOR_BLINK_,1:poke _CURSOR_REV_,0
+1100 pokek,0:a$=chr$(peek(631))
 1110 x=peek(_CRS_SCN_LO_)+peek(_CRS_SCN_HI_)*256+peek(_CRS_LINE_X_):pokex,peek(x)and127
 1120 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,1
 1130 if a$="{left}"andcx>0thencx=cx-1
@@ -102,7 +106,7 @@
 
 !- you win!
 4000 print"{home}{down*2}{yellow}   puzzle finished!"
-4010 print"     press any key":poke_CHARS_IN_KBD_BUF_,0:wait _CHARS_IN_KBD_BUF_,1:geta$:return
+4010 print"     press any key":pokek,0:wait k,1:geta$:return
 
 
 !- remove piece.  If the high bit is not set, don't remove it (Its an original piece)
@@ -172,7 +176,7 @@
 8070 nextn:return
 
 !- End of game
-8500 print"{home}{down*2}{yellow}    quit the game?":poke _CHARS_IN_KBD_BUF_,0:wait _CHARS_IN_KBD_BUF_,1:geta$
+8500 print"{home}{down*2}{yellow}    quit the game?":poke k,0:wait k,1:geta$
 8510 if a$<>"y"thengosub7000:return
 8520 qt=0:return
 
