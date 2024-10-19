@@ -125,18 +125,18 @@
 
 
 !- paint the board
-7000 print "{clear}{yellow}        s{blue}u{red}d{cyan}o{purple}k{green}u{down*5}"
-7010 print "    {cyan}U{sh asterisk*3}{cm r}{sh asterisk*3}{cm r}{sh asterisk*3}I"
+7000 print "{clear}{yellow}        s{blue}u{red}d{cyan}o{purple}k{green}u{down*5}
+7010 print "    {cyan}U{sh asterisk*3}{cm r}{sh asterisk*3}{cm r}{sh asterisk*3}I
 7020 for y=0 to 8:print"    {sh -}";
 7030 for x = 0 to 8
 7040 c=(gb%(x,y)and127)
 7050 print"{white}"mid$(n$,c+1,1)"{cyan}";
 7060 ifx=2orx=5thenprint"{sh -}";
 7070 next x:print"{sh -}"
-7080 if(y=2ory=5)thenprint"    {cm q}{sh asterisk*3}{sh +}{sh asterisk*3}{sh +}{sh asterisk*3}{cm w}"
+7080 if(y=2ory=5)thenprint"    {cm q}{sh asterisk*3}{sh +}{sh asterisk*3}{sh +}{sh asterisk*3}{cm w}
 7090 next y
-7100 print "    J{sh asterisk*3}{cm e}{sh asterisk*3}{cm e}{sh asterisk*3}K"
-7105 print "{down} {green}q{blue}uit {green}1-9{blue} {green}crsr{blue} {green}r{blue}emove{down}"
+7100 print "    J{sh asterisk*3}{cm e}{sh asterisk*3}{cm e}{sh asterisk*3}K
+7105 print "{down} {green}q{blue}uit {green}1-9{blue} {green}crsr{blue} {green}r{blue}emove{down}
 7110 print "{red}  by chris zinn 2024";
 
 !-Looking for memory leaks
