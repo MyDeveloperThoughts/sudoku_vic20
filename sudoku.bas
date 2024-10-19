@@ -18,6 +18,7 @@
 !-qt      = Quit Flag.. if -1 then main loop continues
 !-cx cx  = Cursor x and y position in the board
 !-px py  = x,y on the screen relative to cx,cx
+!-c$     = used to colour the numbers white or green to show which ones you've put down
 
 !- Constant replacements - these are used often, memory and speed benefit
 !- k (_CHARS_IN_KBD_BUF_)       19
@@ -69,7 +70,8 @@
 1090 poke _CURSOR_BLINK_,0:poke k,0:wait k,1:poke _CURSOR_BLINK_,1:poke _CURSOR_REV_,0
 1100 pokek,0:a$=chr$(peek(631))
 1110 x=peek(_CRS_SCN_LO_)+peek(_CRS_SCN_HI_)*256+peek(_CRS_LINE_X_):pokex,peek(x)and127
-1120 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,1
+1115 c=1:ifgb%(cx,cy)and128thenc=5
+1120 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,c
 1130 if a$="{left}"andcx>0thencx=cx-1
 1140 if a$="{right}"andcx<8thencx=cx+1
 1150 if a$="{up}"andcy>0thency=cy-1
@@ -101,6 +103,7 @@
 !- Place new pieces on the board with the high bit set
 !- This way we can tell which are original pieces and which we added
 2090 gb%(cx,cy)=cor128:x=peek(209)+peek(210)*256+peek(211):pokex,c+48
+2095 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,7
 2100 lf=lf-1:sc=sc+100:gosub 6020
 2120 return
 
@@ -134,8 +137,8 @@
 7010 print "    {cyan}U{sh asterisk*3}{cm r}{sh asterisk*3}{cm r}{sh asterisk*3}I
 7020 for y=0 to 8:print"    {sh -}";
 7030 for x = 0 to 8
-7040 c=(gb%(x,y)and127)
-7050 print"{white}"mid$(n$,c+1,1)"{cyan}";
+7040 c=gb%(x,y)and127:c$="{white}":ifgb%(x,y)and128thenc$="{green}"
+7050 printc$mid$(n$,c+1,1)"{cyan}";
 7060 ifx=2orx=5thenprint"{sh -}";
 7070 next x:print"{sh -}"
 7080 if(y=2ory=5)thenprint"    {cm q}{sh asterisk*3}{sh +}{sh asterisk*3}{sh +}{sh asterisk*3}{cm w}
