@@ -9,15 +9,20 @@
  
 !- Variables used
 !-n$       = For quick translation of a number to a string
-!-gb%      = Board Number (1..?)
+!-gb      = Board Number (1..?)
 !-gb%(8,8) = Game Board
-!-c%       = temp variable used for misc things
-!-b%       = boolean answer for gosubs.  -1 true 0 false
-!-lf%      = pieces left
-!-sc%      = score
-!-qt%      = Quit Flag.. if -1 then main loop continues
-!-cx% cx%  = Cursor x and y position in the board
-!-px% py%  = x,y on the screen relative to cx%,cx%
+!-c       = temp variable used for misc things
+!-b       = boolean answer for gosubs.  -1 true 0 false
+!-lf      = pieces left
+!-sc      = score
+!-qt      = Quit Flag.. if -1 then main loop continues
+!-cx cx  = Cursor x and y position in the board
+!-px py  = x,y on the screen relative to cx,cx
+!-c$     = used to colour the numbers white or green to show which ones you've put down
+
+!- Constant replacements - these are used often, memory and speed benefit
+!- k (_CHARS_IN_KBD_BUF_)       19
+!- s (_BASS_SOUND_)             36874
 
 !- Constants for important memory addresses
 !- Check these memory addresses out in the book Mapping the VIC
@@ -38,16 +43,17 @@
 !-CONST _COLORS_           36879
 !-CONST _BASS_SOUND_       36874
 !-CONST _SOPRANO_SOUND_    36876
-10 n$=" 123456789":dim gb%(8,8):c%=0:b%=0:poke _COLORS_,10:poke _SOUND_VOLUME_,15
-20 print "{clear}{white}select puzzle"chr$(13)"{green}1-4 {yellow}5-8 {purple}9-10 {red}11{white}":input gb%
-30 if (gb%<0 or gb%>11) then end
+10 n$=" 123456789":dim gb%(8,8):c=0:b=0:poke _COLORS_,10:poke _SOUND_VOLUME_,15
+11 k=_CHARS_IN_KBD_BUF_:s=_BASS_SOUND_
+20 print "{clear}{white}select puzzle"chr$(13)"{green}1-4 {yellow}5-8 {purple}9-10 {red}11{white}":input gb
+30 if (gb<0 or gb>11) then end
 40 print "{cyan}one moment...":gosub800:print"{clear}bye":end
 
 !-start and play the game
-800 cx%=0:cy%=0:sc%=0:qt%=-1
+800 cx=0:cy=0:sc=0:qt=-1
 810 gosub 8000:gosub 7000
-820 gosub 1000:iflf%=0thengosub4000:return
-830 ifqt%then820
+820 gosub 1000:iflf=0thengosub4000:return
+830 ifqtthen820
 840 return
 
 !- wait for key press: 204,0 forces cursor blink.
@@ -55,88 +61,90 @@
 !- _KERNAL_PLOT_ 65520 x,y
 !-       Clear Carry should be clear.
 !-       X=row Y=column then sys it to move the cursor there
-1000 px%=cx%:py%=cy%:poke_CURSOR_COLOR_,7
-1010 if px%>2 then px%=px%+1
-1020 if px%>6 then px%=px%+1
-1030 if py%>2 then py%=py%+1
-1040 if py%>6 then py%=py%+1
-1080 poke_CPU_STATUS_FLAGS_,0:poke_CPU_X_REG_,py%+7:poke_CPU_Y_REG_,px%+5:sys_KERNAL_PLOT_
-1090 poke _CURSOR_BLINK_,0:poke _CHARS_IN_KBD_BUF_,0:wait _CHARS_IN_KBD_BUF_,1:poke _CURSOR_BLINK_,1:poke _CURSOR_REV_,0
-1100 poke_CHARS_IN_KBD_BUF_,0:a$=chr$(peek(631))
+1000 px=cx:py=cy:poke_CURSOR_COLOR_,7
+1010 if px>2 then px=px+1
+1020 if px>6 then px=px+1
+1030 if py>2 then py=py+1
+1040 if py>6 then py=py+1
+1080 poke_CPU_STATUS_FLAGS_,0:poke_CPU_X_REG_,py+7:poke_CPU_Y_REG_,px+5:sys_KERNAL_PLOT_
+1090 poke _CURSOR_BLINK_,0:poke k,0:wait k,1:poke _CURSOR_BLINK_,1:poke _CURSOR_REV_,0
+1100 pokek,0:a$=chr$(peek(631))
 1110 x=peek(_CRS_SCN_LO_)+peek(_CRS_SCN_HI_)*256+peek(_CRS_LINE_X_):pokex,peek(x)and127
-1120 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,1
-1130 if a$="{left}"andcx%>0thencx%=cx%-1
-1140 if a$="{right}"andcx%<8thencx%=cx%+1
-1150 if a$="{up}"andcy%>0thency%=cy%-1
-1160 if a$="{down}"andcy%<8thency%=cy%+1
+1115 c=1:ifgb%(cx,cy)and128thenc=5
+1120 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,c
+1130 if a$="{left}"andcx>0thencx=cx-1
+1140 if a$="{right}"andcx<8thencx=cx+1
+1150 if a$="{up}"andcy>0thency=cy-1
+1160 if a$="{down}"andcy<8thency=cy+1
 1170 if a$="q" then gosub8500
 1175 if a$="r" then gosub4500
 1180 if a$>="1" and a$<="9" then gosub 2000:gosub 5000
 1999 return
 
 !- process a piece placement
-2000 c%=val(a$)
-2010 if gb%(cx%,cy%)<>0 then gosub 6000:return
+2000 c=val(a$)
+2010 if gb%(cx,cy)<>0 then gosub 6000:return
 
 !- Does our number exist anywhere in this row? If so play buzzer
-2020 b%=0:forx=0to8:if(gb%(x,cy%)and127)=c%thenb%=-1
-2030 next:if b% then gosub 6010:sc%=sc%-50:return
+2020 b=0:forx=0to8:if(gb%(x,cy)and127)=cthenb=-1
+2030 next:if b then gosub 6010:sc=sc-50:return
 
 !- Does our number exist anywhere in this column? If so play buzzer
-2040 b%=0:forx=0to8:if(gb%(cx%,x)and127)=c%thenb%=-1
-2050 next:if b% then gosub 6010:sc%=sc%-50:return
+2040 b=0:forx=0to8:if(gb%(cx,x)and127)=cthenb=-1
+2050 next:if b then gosub 6010:sc=sc-50:return
 
 !- Does our number exist in this grid section
-!- gx% and gy% are starting point for the grid we are input
-2060 gx%=int(cx%/3)*3:gy%=int(cy%/3)*3
-2070 b%=0:forx=0to2:fory=0to2:if (gb%(gx%+x,gy%+y)and127)=c%thenb%=-1
-2080 next:next:if b% then gosub 6010:sc%=sc%-50:return
+!- gx and gy are starting point for the grid we are input
+2060 gx=int(cx/3)*3:gy=int(cy/3)*3
+2070 b=0:forx=0to2:fory=0to2:if (gb%(gx+x,gy+y)and127)=cthenb=-1
+2080 next:next:if b then gosub 6010:sc=sc-50:return
 
 !- place the correct number on the board
 !- Place new pieces on the board with the high bit set
 !- This way we can tell which are original pieces and which we added
-2090 gb%(cx%,cy%)=c%or128:x=peek(209)+peek(210)*256+peek(211):pokex,c%+48
-2100 lf%=lf%-1:sc%=sc%+100:gosub 6020
+2090 gb%(cx,cy)=cor128:x=peek(209)+peek(210)*256+peek(211):pokex,c+48
+2095 x=peek(_CRS_CLR_LO_)+peek(_CRS_CLR_HI_)*256+peek(_CRS_LINE_X_):pokex,7
+2100 lf=lf-1:sc=sc+100:gosub 6020
 2120 return
 
 
 !- you win!
 4000 print"{home}{down*2}{yellow}   puzzle finished!"
-4010 print"     press any key":poke_CHARS_IN_KBD_BUF_,0:wait _CHARS_IN_KBD_BUF_,1:geta$:return
+4010 print"     press any key":pokek,0:wait k,1:geta$:return
 
 
 !- remove piece.  If the high bit is not set, don't remove it (Its an original piece)
-4500 if gb%(cx%,cy%)=0 or (gb%(cx%,cy%)and128)=0 then return
-4510 gb%(cx%,cy%)=0:sc%=sc%-100:lf%=lf%+1:gosub 7000:return
+4500 if gb%(cx,cy)=0 or (gb%(cx,cy)and128)=0 then return
+4510 gb%(cx,cy)=0:sc=sc-100:lf=lf+1:gosub 7000:return
 
 
 !- update score
-5000 print"{home}{down*4}{purple}      puzzle {cyan}"gb%
-5005 if sc%<-500 then sc%=-500
-5010 print"{purple}left:{cyan}"lf%"{left}  {purple}score:{green}"sc%"{left}  ":return
+5000 print"{home}{down*4}{purple}      puzzle {cyan}"gb
+5005 if sc<-500 then sc=-500
+5010 print"{purple}left:{cyan}"lf"{left}  {purple}score:{green}"sc"{left}  ":return
 
 
 !- buzzer sound for piece exists in this spot
-6000 forx=140to238step4:poke_BASS_SOUND_,x:next:poke_BASS_SOUND_,0:return
+6000 forx=140to238step4:pokes,x:next:pokes,0:return
 !- buzzer sound for wrong answer
-6010 forx=140to238step4:poke_BASS_SOUND_,140:next:poke_BASS_SOUND_,0:return
+6010 forx=140to238step4:pokes,140:next:pokes,0:return
 !- ding for correct answer
 6020 forx=235to250:poke_SOPRANO_SOUND_,x:next:poke_SOPRANO_SOUND_,0:return
 
 
 !- paint the board
-7000 print "{clear}{yellow}        s{blue}u{red}d{cyan}o{purple}k{green}u{down*5}"
-7010 print "    {cyan}U{sh asterisk*3}{cm r}{sh asterisk*3}{cm r}{sh asterisk*3}I"
+7000 print "{clear}{yellow}        s{blue}u{red}d{cyan}o{purple}k{green}u{down*5}
+7010 print "    {cyan}U{sh asterisk*3}{cm r}{sh asterisk*3}{cm r}{sh asterisk*3}I
 7020 for y=0 to 8:print"    {sh -}";
 7030 for x = 0 to 8
-7040 c%=(gb%(x,y)and127)
-7050 print"{white}"mid$(n$,c%+1,1)"{cyan}";
+7040 c=gb%(x,y)and127:c$="{white}":ifgb%(x,y)and128thenc$="{green}"
+7050 printc$mid$(n$,c+1,1)"{cyan}";
 7060 ifx=2orx=5thenprint"{sh -}";
 7070 next x:print"{sh -}"
-7080 if(y=2ory=5)thenprint"    {cm q}{sh asterisk*3}{sh +}{sh asterisk*3}{sh +}{sh asterisk*3}{cm w}"
+7080 if(y=2ory=5)thenprint"    {cm q}{sh asterisk*3}{sh +}{sh asterisk*3}{sh +}{sh asterisk*3}{cm w}
 7090 next y
-7100 print "    J{sh asterisk*3}{cm e}{sh asterisk*3}{cm e}{sh asterisk*3}K"
-7105 print "{down} {green}q{blue}uit {green}1-9{blue} {green}crsr{blue} {green}r{blue}emove{down}"
+7100 print "    J{sh asterisk*3}{cm e}{sh asterisk*3}{cm e}{sh asterisk*3}K
+7105 print "{down} {green}q{blue}uit {green}1-9{blue} {green}crsr{blue} {green}r{blue}emove{down}
 7110 print "{red}  by chris zinn 2024";
 
 !-Looking for memory leaks
@@ -146,7 +154,7 @@
 
 
 !- Read in the puzzle in our packed nibble format
-!- c% is passed in as the board number.  We will skip c%-1*41 bytes
+!- c is passed in as the board number.  We will skip c-1*41 bytes
 
 !- compacted board
 !- xxxx yyyy   Pack 2 values per byte by using 4 bits per number
@@ -160,21 +168,21 @@
 !- 137 and 00001111 (15) - this will mask out the upper to get the lower
 !- 137 / 16 to the high value
 !- print int(137/16),137 and 15 (will display 8 9)
-8000 restore:c%=(gb%-1)*41:ifc%>0thenforx=0toc%-1:ready:next
-8010 lf%=81:x=0:y=0:forn=0to40:read c%:gb%(x,y)=int(c%/16)
-8015 if int(c%/16)>0 then lf%=lf%-1
-8020 ifn=40thenc%=0
-8030 ifn<40thenc%=c%and15
-8035 ifc%>0thenlf%=lf%-1
+8000 restore:c=(gb-1)*41:ifc>0thenforx=0toc-1:ready:next
+8010 lf=81:x=0:y=0:forn=0to40:read c:gb%(x,y)=int(c/16)
+8015 if int(c/16)>0 then lf=lf-1
+8020 ifn=40thenc=0
+8030 ifn<40thenc=cand15
+8035 ifc>0thenlf=lf-1
 8040 x=x+1:ifx=9thenx=0:y=y+1
-8050 if(y<9)thengb%(x,y)=c%
+8050 if(y<9)thengb%(x,y)=c
 8060 x=x+1:ifx=9thenx=0:y=y+1
 8070 nextn:return
 
 !- End of game
-8500 print"{home}{down*2}{yellow}    quit the game?":poke _CHARS_IN_KBD_BUF_,0:wait _CHARS_IN_KBD_BUF_,1:geta$
+8500 print"{home}{down*2}{yellow}    quit the game?":poke k,0:wait k,1:geta$
 8510 if a$<>"y"thengosub7000:return
-8520 qt%=0:return
+8520 qt=0:return
 
 !- I copied these puzzles from a Sudoku booklet I bought at Walmart for $6
 !- Puzzle 1 nibble packed (Each board is 41 bytes)
