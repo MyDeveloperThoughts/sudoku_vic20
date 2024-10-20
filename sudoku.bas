@@ -1,7 +1,11 @@
 !- Sudoku for the unexpanded VIC-20 by Chris Zinn
 !- Version 1.00 10/13/2024  1.01 10/14/2024
+!- Version 1.1  10/20/2024
+!-            Contribution from Andy H which include optimizations and colours your number in green.
+!-            Compacted the 11th puzzle
+!-            Display version in game
 !- Check out my youtube channel: https://www.youtube.com/@MyDeveloperThoughts
-!- Check out the video for this project: 
+!- Check out the video for this project:  https://youtu.be/MMtJO1RT_CI
 
 !- This source code is for CBM Prog Studio 4.4.0
 !- Be sure to go to settings -> BASIC Code Generation -> UNCHECK Include Spaces
@@ -133,7 +137,7 @@
 
 
 !- paint the board
-7000 print "{clear}{yellow}        s{blue}u{red}d{cyan}o{purple}k{green}u{down*5}
+7000 print "{clear}{yellow}     s{blue}u{red}d{cyan}o{purple}k{green}u {cyan}v1.1{down*5}
 7010 print "    {cyan}U{sh asterisk*3}{cm r}{sh asterisk*3}{cm r}{sh asterisk*3}I
 7020 for y=0 to 8:print"    {sh -}";
 7030 for x = 0 to 8
@@ -217,5 +221,5 @@
 9180 data ,16,,114,,135,,,3,3,2,,,4,,9,,88,,8,5
 9190 data ,8,80,4,,6,,,2,9,6,,,3,64,1,144,,96,
 !- Puzzle 11 (diabolical) 100
-9200 data 128,0,0,9,80,36,0,0,7,0,112,9,0,0,5,6,66,0,0,3,2
-9210 data 0,0,2,113,8,0,0,6,0,16,6,0,0,9,64,33,0,0,0,48
+9200 data 128,,,9,80,36,,,7,,112,9,,,5,6,66,,,3,2
+9210 data ,,2,113,8,,,6,,16,6,,,9,64,33,,,,48
